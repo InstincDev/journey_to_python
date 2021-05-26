@@ -2,6 +2,7 @@ import pygame
 import os
 from pygame.constants import K_1
 
+
 # initialize pygame
 pygame.init()
 
@@ -15,8 +16,12 @@ pygame.display.set_caption("Journey to Python")
 FPS = 60
 
 # fonts and text boxes
-LETTER_FONT = pygame.font.SysFont('comicsans', 40)
-INPUT_BOX = pygame.Rect(150, HEIGHT-65, 140, 32)
+LETTER_FONT = pygame.font.SysFont('comicsans', 35)
+INPUT_BOX = pygame.Rect(75, HEIGHT-65, 140, 32)
+MESSAGE_BOX = pygame.Rect(30, HEIGHT - 110, 425, 32)
+DISTANCE_BOX = pygame.Rect(420,HEIGHT - 110, 425,32)
+# messages
+MESSAGE_1 = "Press 1 or 2 to move the rocket."
 
 # game colors
 WHITE = (255, 255, 255)
@@ -59,17 +64,22 @@ class Rocket:
         self.image = image
         self.x = x
         self.y = y
-        self.vel1x = 4
-        self.vel1y = 2
+        self.clicks = 20
+        self.vel1x = 28
+        self.vel1y = 13
         
-
-    def move_rocket(self, user_text):
-        if user_text[pygame.K_1] and user_text[pygame.K_RETURN]:
+        
+    def move_rocket(self, user_input):
+        
+        if int(user_input) == 1:
             self.x += self.vel1x
             self.y -= self.vel1y
-        # elif user_input[pygame.K_2]:
-        #     self.x += self.vel1x
-        #     self.y += self.vel1y
+            self.clicks -= 1
+            
+        elif int(user_input) == 2:
+            self.x += self.vel1x *2
+            self.y -= self.vel1y *2
+            self.clicks -= 2
 
     def draw_rocket(self, WIN):
         # draw rocket to screen
@@ -77,7 +87,7 @@ class Rocket:
         #WIN.blit(ROCKET_2, (red.x, red.y))
 
 
-def draw_window(text_surface, col, rocket):
+def draw_window(text_surface, info_text, distance_text, col, rocket):
     # game window background
     WIN.blit(SPACE_BG, (0, 0))
     # game images
@@ -89,26 +99,8 @@ def draw_window(text_surface, col, rocket):
     # text box
     pygame.draw.rect(WIN, col, INPUT_BOX, 2)
     WIN.blit(text_surface, (INPUT_BOX.x+5, INPUT_BOX.y+5))
-
-
-# def gameplay(key_pressed, white, red):
-#     # onscreen text
-#     # user input
-#     # rocket movement
-#     if key_pressed[pygame.K_1]:
-#         white.x += 4
-#         white.y -= 2
-#     if key_pressed[pygame.K_2]:
-#         white.x += 8
-#         white.y -= 4
-#     if key_pressed[pygame.K_3]:
-#         red.x += 4
-#         red.y -= 2
-#     if key_pressed[pygame.K_4]:
-#         red.x += 8
-#         red.y -= 4
-#     # collision
-
+    WIN.blit(info_text, (MESSAGE_BOX.x+5, MESSAGE_BOX.y+5) )
+    WIN.blit(distance_text, (DISTANCE_BOX.x+5, DISTANCE_BOX.y+5))
 
 def create_game():
     # resize game window
@@ -125,9 +117,7 @@ def create_game():
 def main():
 
     # create rects to track and control game images
-    #white = pygame.Rect(50, 450, ROCKET_WIDTH, ROCKET_HEIGHT)
-    #red = pygame.Rect(50, 450, ROCKET_WIDTH, ROCKET_HEIGHT)
-    rocket = Rocket(ROCKET_1, 50, 450)
+    rocket = Rocket(ROCKET_1, 50, 400)
     # create clock to control frame rate
     clock = pygame.time.Clock()
 
@@ -154,17 +144,13 @@ def main():
             if event.type == pygame.KEYDOWN:
                 if active == True:
                     if event.key == pygame.K_RETURN:
-                        # get key presses
-                        
-
+                        rocket.move_rocket(user_input)    
                         user_input = ''
                     elif event.key == pygame.K_BACKSPACE:
                         user_input = user_input[:-1]
                     else:
                         user_input += event.unicode
-
-        user_text = pygame.key.get_pressed()
-        rocket.move_rocket(user_text)
+  
         # change color of input box
         if active:
             col = COLOR_ACTIVE
@@ -174,10 +160,11 @@ def main():
 
         # renter user input
         text_surface = LETTER_FONT.render(user_input, True, WHITE)
-        # move rockets
-        #gameplay(key_pressed, white, red)
+        info_text = LETTER_FONT.render(MESSAGE_1, True, WHITE)
+        distance_text = LETTER_FONT.render( 'You have '+ str(rocket.clicks) + ' more jumps to Planet Python!', True, WHITE)
+        
         # draw images on window
-        draw_window(text_surface, col, rocket)
+        draw_window(text_surface, info_text, distance_text, col, rocket)
         pygame.display.flip()
         # control the fps
         clock.tick(FPS)
