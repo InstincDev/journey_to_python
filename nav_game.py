@@ -26,6 +26,7 @@ ERROR_BOX = pygame.Rect(220, HEIGHT-65, 140, 32)
 MESSAGE_1 = "Press 1 or 2 to move the rocket."
 MESSAGE_2 = "<-- Click here to Begin."
 ERROR_1 = "Please press 1 or 2"
+MESSAGE_3 = "You have made it to Python!"
 # game colors
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
@@ -51,7 +52,7 @@ ROCKET_HEIGHT = 75
 ROCKET_1 = pygame.transform.rotate(pygame.transform.scale(
     ROCKET_1_IMAGE, (ROCKET_WIDTH, ROCKET_HEIGHT)), 20)
 ROCKET_2 = pygame.transform.rotate(pygame.transform.scale(
-    ROCKET_2_IMAGE, (ROCKET_WIDTH-10, ROCKET_HEIGHT+10)), -25)
+    ROCKET_2_IMAGE, (ROCKET_WIDTH-5, ROCKET_HEIGHT-10)), -25)
 SPACE_BG = pygame.transform.scale(SPACE_BG_IMAGE, (WIDTH, HEIGHT))
 
 # gameplay  vars
@@ -71,7 +72,7 @@ class Rocket:
         self.vel1x = 28
         self.vel1y = 13
 
-    def move_rocket(self, user_input, WIN):
+    def move_rocket(self, user_input):
 
         if int(user_input) == 1:
             self.x += self.vel1x
@@ -82,10 +83,10 @@ class Rocket:
             self.y -= self.vel1y * 2
             self.clicks -= 2
 
-    def draw_rocket(self, WIN):
+    def draw_rocket(self):
         # draw rocket to screen
-        WIN.blit(ROCKET_1, (self.x, self.y))
-        #WIN.blit(ROCKET_2, (red.x, red.y))
+        #WIN.blit(ROCKET_1, (self.x, self.y))
+        WIN.blit(ROCKET_2, (self.x, self.y))
 
 
 def draw_images(rocket):
@@ -94,16 +95,14 @@ def draw_images(rocket):
     # game images
     WIN.blit(HOME_PLANET, (50, 400))
     WIN.blit(PLANET_PYTHON, (600, 50))
-    rocket.draw_rocket(WIN)
+    rocket.draw_rocket()
 
 
 def draw_text(active, user_input, col, rocket):
     # make info rect
     pygame.draw.rect(WIN, GRAY, INFO_BOARDER)
     # text box
-
     pygame.draw.rect(WIN, col, INPUT_BOX, 2)
-
     text_surface = LETTER_FONT.render(user_input, True, WHITE)
     info_text = LETTER_FONT.render(MESSAGE_1, True, WHITE)
     distance_text = LETTER_FONT.render(
@@ -117,6 +116,8 @@ def draw_text(active, user_input, col, rocket):
     if user_input != '' and user_input != str(1) and user_input != str(2):
         error_text = LETTER_FONT.render(ERROR_1, True, WHITE)
         WIN.blit(error_text, (ERROR_BOX.x+5, ERROR_BOX.y+5))
+
+
 
 
 def create_game():
@@ -143,6 +144,7 @@ def main():
     col = COLOR_INACTIVE
     active = False
     run = True
+    game_level = 1
     # main game loop
     while run:
         # identify events within game
@@ -162,7 +164,7 @@ def main():
                 if active == True:
                     if event.key == pygame.K_RETURN:
                         if user_input.isdigit():
-                            rocket.move_rocket(user_input, WIN)
+                            rocket.move_rocket(user_input)
                         user_input = ''
                     elif event.key == pygame.K_BACKSPACE:
                         user_input = user_input[:-1]
@@ -176,12 +178,17 @@ def main():
             col = COLOR_INACTIVE
 
         pygame.draw.rect(WIN, col, INPUT_BOX)
+        if rocket.clicks <= 0:
+            game_level = 2
 
-        # renter user input
-
-        # draw images on window
-        draw_images(rocket)
-        draw_text(active, user_input, col, rocket)
+        if game_level == 1:
+            # draw images on window
+            draw_images(rocket)
+            draw_text(active, user_input, col, rocket)
+        if game_level == 2:
+            draw_images(rocket)
+            win_text = LETTER_FONT.render(MESSAGE_3, True, WHITE)
+            WIN.blit(win_text, (INFO_BOX.x+5, INFO_BOX.y+5))
         pygame.display.flip()
         # control the fps
         clock.tick(FPS)
