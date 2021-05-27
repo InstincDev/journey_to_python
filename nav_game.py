@@ -18,11 +18,14 @@ FPS = 60
 # fonts and text boxes
 LETTER_FONT = pygame.font.SysFont('comicsans', 35)
 INPUT_BOX = pygame.Rect(75, HEIGHT-65, 140, 32)
-MESSAGE_BOX = pygame.Rect(30, HEIGHT - 110, 425, 32)
-DISTANCE_BOX = pygame.Rect(420,HEIGHT - 110, 425,32)
+INFO_BOX = pygame.Rect(30, HEIGHT - 110, 425, 32)
+DISTANCE_BOX = pygame.Rect(420, HEIGHT - 110, 425, 32)
+MESSAGE_BOX = pygame.Rect(220, HEIGHT-65, 140, 32)
+ERROR_BOX = pygame.Rect(220, HEIGHT-65, 140, 32)
 # messages
 MESSAGE_1 = "Press 1 or 2 to move the rocket."
-
+MESSAGE_2 = "<-- Click here to Begin."
+ERROR_1 = "Please press 1 or 2"
 # game colors
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
@@ -67,18 +70,16 @@ class Rocket:
         self.clicks = 20
         self.vel1x = 28
         self.vel1y = 13
-        
-        
-    def move_rocket(self, user_input):
-        
+
+    def move_rocket(self, user_input, WIN):
+
         if int(user_input) == 1:
             self.x += self.vel1x
             self.y -= self.vel1y
             self.clicks -= 1
-            
         elif int(user_input) == 2:
-            self.x += self.vel1x *2
-            self.y -= self.vel1y *2
+            self.x += self.vel1x * 2
+            self.y -= self.vel1y * 2
             self.clicks -= 2
 
     def draw_rocket(self, WIN):
@@ -87,20 +88,36 @@ class Rocket:
         #WIN.blit(ROCKET_2, (red.x, red.y))
 
 
-def draw_window(text_surface, info_text, distance_text, col, rocket):
+def draw_images(rocket):
     # game window background
     WIN.blit(SPACE_BG, (0, 0))
     # game images
     WIN.blit(HOME_PLANET, (50, 400))
     WIN.blit(PLANET_PYTHON, (600, 50))
     rocket.draw_rocket(WIN)
+
+
+def draw_text(active, user_input, col, rocket):
     # make info rect
     pygame.draw.rect(WIN, GRAY, INFO_BOARDER)
     # text box
+
     pygame.draw.rect(WIN, col, INPUT_BOX, 2)
+
+    text_surface = LETTER_FONT.render(user_input, True, WHITE)
+    info_text = LETTER_FONT.render(MESSAGE_1, True, WHITE)
+    distance_text = LETTER_FONT.render(
+        'You have ' + str(rocket.clicks) + ' more jumps to Planet Python!', True, WHITE)
+    message_text = LETTER_FONT.render(MESSAGE_2, True, WHITE)
     WIN.blit(text_surface, (INPUT_BOX.x+5, INPUT_BOX.y+5))
-    WIN.blit(info_text, (MESSAGE_BOX.x+5, MESSAGE_BOX.y+5) )
+    WIN.blit(info_text, (INFO_BOX.x+5, INFO_BOX.y+5))
     WIN.blit(distance_text, (DISTANCE_BOX.x+5, DISTANCE_BOX.y+5))
+    if active == False:
+        WIN.blit(message_text, (MESSAGE_BOX.x+5, MESSAGE_BOX.y+5))
+    if user_input != '' and user_input != str(1) and user_input != str(2):
+        error_text = LETTER_FONT.render(ERROR_1, True, WHITE)
+        WIN.blit(error_text, (ERROR_BOX.x+5, ERROR_BOX.y+5))
+
 
 def create_game():
     # resize game window
@@ -144,27 +161,27 @@ def main():
             if event.type == pygame.KEYDOWN:
                 if active == True:
                     if event.key == pygame.K_RETURN:
-                        rocket.move_rocket(user_input)    
+                        if user_input.isdigit():
+                            rocket.move_rocket(user_input, WIN)
                         user_input = ''
                     elif event.key == pygame.K_BACKSPACE:
                         user_input = user_input[:-1]
                     else:
                         user_input += event.unicode
-  
+
         # change color of input box
         if active:
             col = COLOR_ACTIVE
         else:
             col = COLOR_INACTIVE
+
         pygame.draw.rect(WIN, col, INPUT_BOX)
 
         # renter user input
-        text_surface = LETTER_FONT.render(user_input, True, WHITE)
-        info_text = LETTER_FONT.render(MESSAGE_1, True, WHITE)
-        distance_text = LETTER_FONT.render( 'You have '+ str(rocket.clicks) + ' more jumps to Planet Python!', True, WHITE)
-        
+
         # draw images on window
-        draw_window(text_surface, info_text, distance_text, col, rocket)
+        draw_images(rocket)
+        draw_text(active, user_input, col, rocket)
         pygame.display.flip()
         # control the fps
         clock.tick(FPS)
